@@ -1,0 +1,23 @@
+# Kindle News Delivery Configuration
+# Copy this file to config.yaml and fill in your credentials
+
+# Kindle Email Settings
+kindle:
+  email: "your-name@kindle.com"  # Your Kindle email address
+
+# Email Settings (for sending to Kindle)
+email:
+  smtp_server: "smtp.gmail.com"  # Gmail SMTP server
+  smtp_port: 587
+  sender_email: "your-email@gmail.com"  # Your email address
+  sender_password: "your-app-specific-password"  # Gmail App Password (not regular password)
+
+# NYT Credentials
+nyt:
+  email: "your-nyt-email@example.com"
+  password: "your-nyt-password"
+
+# News Settings
+news:
+  max_articles: 10  # Maximum number of articles to fetch (NYT Business section)
+  delivery_time: "06:00"  # Time to send (24-hour format)

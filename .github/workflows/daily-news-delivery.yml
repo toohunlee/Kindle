@@ -1,0 +1,71 @@
+name: Daily News Delivery
+
+on:
+  schedule:
+    # 월요일부터 금요일 오전 5시 (한국시간 기준 - UTC 20:00 전날)
+    # GitHub Actions는 UTC 기준이므로 한국시간 05:00 = UTC 20:00 (전날)
+    - cron: '0 20 * * 0-4'  # 일요일-목요일 20:00 UTC = 월요일-금요일 05:00 KST
+
+  # 수동 실행도 가능하도록
+  workflow_dispatch:
+
+jobs:
+  deliver-news:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Chrome and ChromeDriver
+      uses: browser-actions/setup-chrome@latest
+      with:
+        chrome-version: stable
+
+    - name: Create config.yaml from secrets
+      run: |
+        cat > config.yaml << EOF
+        # Kindle News Delivery Configuration
+
+        # Kindle Email Settings
+        kindle:
+          email: "${{ secrets.KINDLE_EMAIL }}"
+
+        # Email Settings (for sending to Kindle)
+        email:
+          smtp_server: "smtp.gmail.com"
+          smtp_port: 587
+          sender_email: "${{ secrets.GMAIL_EMAIL }}"
+          sender_password: "${{ secrets.GMAIL_APP_PASSWORD }}"
+
+        # NYT Credentials
+        nyt:
+          email: "${{ secrets.NYT_EMAIL }}"
+          password: "${{ secrets.NYT_PASSWORD }}"
+
+        # News Settings
+        news:
+          max_articles: 10
+          delivery_time: "05:00"
+        EOF
+
+    - name: Run news delivery
+      run: python main.py
+
+    - name: Upload EPUB artifact (on failure)
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: daily-news-epub
+        path: output/*.epub
+        retention-days: 7
