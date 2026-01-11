@@ -40,11 +40,26 @@ class NYTScraperSelenium:
             self.driver.get(login_url)
             time.sleep(3)
 
-            # Wait for and fill in email
+            # Wait for and fill in email - try multiple strategies
+            email_field = None
             try:
-                email_field = self.wm.wait_for_element(By.ID, "email", timeout=10)
-                if not email_field:
-                    email_field = self.wm.wait_for_element(By.NAME, "email", timeout=5)
+                # Try different selectors for email field
+                email_selectors = [
+                    (By.ID, "email"),
+                    (By.NAME, "email"),
+                    (By.CSS_SELECTOR, "input[type='email']"),
+                    (By.XPATH, "//input[@type='email']"),
+                    (By.XPATH, "//input[@name='email']")
+                ]
+
+                for by_type, selector in email_selectors:
+                    try:
+                        email_field = self.wm.wait_for_element(by_type, selector, timeout=5)
+                        if email_field:
+                            logger.info(f"Found email field with {by_type}: {selector}")
+                            break
+                    except:
+                        continue
 
                 if email_field:
                     email_field.clear()
@@ -52,25 +67,56 @@ class NYTScraperSelenium:
                     logger.info("Entered email")
                 else:
                     logger.error("Could not find email field")
+                    self.wm.take_screenshot("nyt_no_email_field.png")
                     return False
 
             except Exception as e:
                 logger.error(f"Error entering email: {e}")
+                self.wm.take_screenshot("nyt_email_error.png")
                 return False
 
             # Click continue/next button if exists
             try:
-                continue_button = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Continue')]")
-                continue_button.click()
-                time.sleep(2)
+                continue_selectors = [
+                    "//button[contains(text(), 'Continue')]",
+                    "//button[contains(text(), 'continue')]",
+                    "//button[@type='submit']"
+                ]
+
+                for selector in continue_selectors:
+                    try:
+                        continue_button = self.driver.find_element(By.XPATH, selector)
+                        continue_button.click()
+                        logger.info("Clicked Continue button")
+                        time.sleep(3)
+                        break
+                    except:
+                        continue
             except:
                 pass  # Button might not exist, continue anyway
 
-            # Wait for and fill in password
+            # Wait for and fill in password - try multiple strategies
+            password_field = None
             try:
-                password_field = self.wm.wait_for_element(By.ID, "password", timeout=10)
-                if not password_field:
-                    password_field = self.wm.wait_for_element(By.NAME, "password", timeout=5)
+                # Wait a bit for page to load after Continue
+                time.sleep(2)
+
+                # Try different selectors for password field
+                password_selectors = [
+                    (By.ID, "password"),
+                    (By.NAME, "password"),
+                    (By.CSS_SELECTOR, "input[type='password']"),
+                    (By.XPATH, "//input[@type='password']")
+                ]
+
+                for by_type, selector in password_selectors:
+                    try:
+                        password_field = self.wm.wait_for_element(by_type, selector, timeout=5)
+                        if password_field:
+                            logger.info(f"Found password field with {by_type}: {selector}")
+                            break
+                    except:
+                        continue
 
                 if password_field:
                     password_field.clear()
@@ -78,10 +124,13 @@ class NYTScraperSelenium:
                     logger.info("Entered password")
                 else:
                     logger.error("Could not find password field")
+                    # Take screenshot for debugging
+                    self.wm.take_screenshot("nyt_no_password_field.png")
                     return False
 
             except Exception as e:
                 logger.error(f"Error entering password: {e}")
+                self.wm.take_screenshot("nyt_password_error.png")
                 return False
 
             # Click submit/login button
