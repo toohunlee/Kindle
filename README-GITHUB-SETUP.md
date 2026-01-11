@@ -181,3 +181,44 @@ GitHub Actions가 작동하려면 Amazon에서 Gmail을 승인해야 합니다:
 - [ ] Kindle에서 첫 번째 뉴스 수신 확인
 
 모든 항목을 완료하면 월요일부터 금요일 오전 5시에 자동으로 NYT Business 뉴스를 받을 수 있습니다!
+
+## 🖼️ 커버 이미지 설정
+
+Kindle idle time에 표시될 커버 이미지를 설정하려면:
+
+### 로컬 실행 시
+
+1. 첨부하신 New York Times 이미지를 `assets/` 폴더에 저장
+2. 파일명을 `cover.jpg` 또는 `cover.png`로 변경
+
+```bash
+# 자동 설정 스크립트 실행
+./setup-cover.sh
+
+# 또는 수동으로 복사
+cp ~/Downloads/nyt-cover.jpg assets/cover.jpg
+```
+
+### GitHub Actions에서
+
+GitHub에 이미지를 포함시키려면:
+
+1. 이미지를 `assets/cover.jpg`로 저장
+2. Git에 추가하고 커밋
+
+```bash
+cp ~/Downloads/nyt-cover.jpg assets/cover.jpg
+git add assets/cover.jpg
+git commit -m "Add cover image for Kindle"
+git push
+```
+
+**주의**: 이미지는 `.gitignore`에서 예외 처리되어 있어 `assets/cover.*` 파일은 자동으로 포함됩니다.
+
+### 권장 사양
+
+- **해상도**: 1600x2560 픽셀 (Kindle Paperwhite)
+- **최소**: 800x1280 픽셀
+- **형식**: JPG 또는 PNG
+- **파일 크기**: 2MB 이하
+

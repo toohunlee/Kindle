@@ -7,14 +7,29 @@ from ebooklib import epub
 from datetime import datetime
 import logging
 import os
+import sys
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class EpubFormatter:
-    def __init__(self):
+    def __init__(self, cover_image_path=None):
         self.book = None
+        self.cover_image_path = cover_image_path or self._get_default_cover_path()
+
+    def _get_default_cover_path(self):
+        """Get the default cover image path"""
+        # Try to find cover.jpg in assets directory
+        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cover_path = os.path.join(script_dir, 'assets', 'cover.jpg')
+        if os.path.exists(cover_path):
+            return cover_path
+        # Also try cover.png
+        cover_path = os.path.join(script_dir, 'assets', 'cover.png')
+        if os.path.exists(cover_path):
+            return cover_path
+        return None
 
     def format_for_kindle(self, nyt_articles):
         """
@@ -42,6 +57,27 @@ class EpubFormatter:
             # Create chapters
             chapters = []
             spine = ['nav']
+
+            # Add cover image if available
+            if self.cover_image_path and os.path.exists(self.cover_image_path):
+                try:
+                    with open(self.cover_image_path, 'rb') as f:
+                        cover_image_data = f.read()
+
+                    # Determine image type
+                    image_ext = os.path.splitext(self.cover_image_path)[1].lower()
+                    if image_ext == '.jpg' or image_ext == '.jpeg':
+                        media_type = 'image/jpeg'
+                    elif image_ext == '.png':
+                        media_type = 'image/png'
+                    else:
+                        media_type = 'image/jpeg'
+
+                    # Set the cover image
+                    self.book.set_cover(f'cover{image_ext}', cover_image_data)
+                    logger.info(f"Added cover image: {self.cover_image_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to add cover image: {e}")
 
             # Add NYT articles
             for i, article in enumerate(nyt_articles, 1):

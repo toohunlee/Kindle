@@ -41,6 +41,10 @@ output/
 # Screenshots (debugging)
 *.png
 
+# But include cover images
+!assets/cover.png
+!assets/cover.jpg
+
 # IDE
 .vscode/
 .idea/
