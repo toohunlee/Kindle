@@ -97,6 +97,7 @@ class NYTScraperSelenium:
 
             # Wait for and fill in password - try multiple strategies
             password_field = None
+            password_entered = False
             try:
                 # Wait longer for page to load after Continue
                 time.sleep(4)
@@ -111,41 +112,50 @@ class NYTScraperSelenium:
 
                 for by_type, selector in password_selectors:
                     try:
-                        password_field = self.wm.wait_for_element(by_type, selector, timeout=5)
+                        # Use wait_for_clickable instead for better interaction readiness
+                        password_field = self.wm.wait_for_clickable(by_type, selector, timeout=10)
                         if password_field:
-                            logger.info(f"Found password field with {by_type}: {selector}")
+                            logger.info(f"Found clickable password field with {by_type}: {selector}")
 
-                            # Wait for the field to be interactable
+                            # Additional wait for JavaScript to finish
                             time.sleep(1)
 
-                            # Check if element is displayed and enabled
-                            if password_field.is_displayed() and password_field.is_enabled():
-                                # Try to click first to focus
+                            # Try to interact with the field
+                            try:
+                                # Use JavaScript to set value as fallback
+                                self.driver.execute_script(
+                                    "arguments[0].value = arguments[1];",
+                                    password_field,
+                                    self.password
+                                )
+                                # Trigger input event
+                                self.driver.execute_script(
+                                    "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));",
+                                    password_field
+                                )
+                                logger.info("Entered password via JavaScript")
+                                password_entered = True
+                                break
+                            except Exception as js_error:
+                                logger.warning(f"JavaScript method failed: {js_error}, trying send_keys")
                                 try:
                                     password_field.click()
                                     time.sleep(0.5)
-                                except:
-                                    pass
-
-                                # Clear and send keys
-                                try:
                                     password_field.clear()
-                                except:
-                                    pass  # Clear might fail, that's ok
+                                    password_field.send_keys(self.password)
+                                    logger.info("Entered password via send_keys")
+                                    password_entered = True
+                                    break
+                                except Exception as send_error:
+                                    logger.warning(f"send_keys failed: {send_error}")
+                                    continue
 
-                                password_field.send_keys(self.password)
-                                logger.info("Entered password")
-                                break
-                            else:
-                                logger.warning(f"Password field not ready: displayed={password_field.is_displayed()}, enabled={password_field.is_enabled()}")
-                                password_field = None
-                                continue
                     except Exception as e:
-                        logger.warning(f"Failed with {by_type} {selector}: {e}")
+                        logger.warning(f"Failed with {by_type} {selector}: {str(e)[:100]}")
                         continue
 
-                if not password_field:
-                    logger.error("Could not find valid password field")
+                if not password_entered:
+                    logger.error("Could not enter password with any method")
                     # Take screenshot for debugging
                     self.wm.take_screenshot("nyt_no_password_field.png")
                     return False
