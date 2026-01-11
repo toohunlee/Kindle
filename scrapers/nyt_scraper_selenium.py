@@ -98,8 +98,8 @@ class NYTScraperSelenium:
             # Wait for and fill in password - try multiple strategies
             password_field = None
             try:
-                # Wait a bit for page to load after Continue
-                time.sleep(2)
+                # Wait longer for page to load after Continue
+                time.sleep(4)
 
                 # Try different selectors for password field
                 password_selectors = [
@@ -114,16 +114,38 @@ class NYTScraperSelenium:
                         password_field = self.wm.wait_for_element(by_type, selector, timeout=5)
                         if password_field:
                             logger.info(f"Found password field with {by_type}: {selector}")
-                            break
-                    except:
+
+                            # Wait for the field to be interactable
+                            time.sleep(1)
+
+                            # Check if element is displayed and enabled
+                            if password_field.is_displayed() and password_field.is_enabled():
+                                # Try to click first to focus
+                                try:
+                                    password_field.click()
+                                    time.sleep(0.5)
+                                except:
+                                    pass
+
+                                # Clear and send keys
+                                try:
+                                    password_field.clear()
+                                except:
+                                    pass  # Clear might fail, that's ok
+
+                                password_field.send_keys(self.password)
+                                logger.info("Entered password")
+                                break
+                            else:
+                                logger.warning(f"Password field not ready: displayed={password_field.is_displayed()}, enabled={password_field.is_enabled()}")
+                                password_field = None
+                                continue
+                    except Exception as e:
+                        logger.warning(f"Failed with {by_type} {selector}: {e}")
                         continue
 
-                if password_field:
-                    password_field.clear()
-                    password_field.send_keys(self.password)
-                    logger.info("Entered password")
-                else:
-                    logger.error("Could not find password field")
+                if not password_field:
+                    logger.error("Could not find valid password field")
                     # Take screenshot for debugging
                     self.wm.take_screenshot("nyt_no_password_field.png")
                     return False
