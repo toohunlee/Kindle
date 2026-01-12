@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from datetime import datetime
 import time
+import random
 import logging
 import sys
 import os
@@ -38,7 +39,9 @@ class NYTScraperSelenium:
             # Navigate to NYT login page
             login_url = "https://myaccount.nytimes.com/auth/login"
             self.driver.get(login_url)
-            time.sleep(3)
+
+            # Longer initial wait to let page fully load and appear more human-like
+            time.sleep(5)
 
             # Wait for and fill in email - try multiple strategies
             email_field = None
@@ -63,6 +66,7 @@ class NYTScraperSelenium:
 
                 if email_field:
                     email_field.clear()
+                    time.sleep(random.uniform(0.5, 1.5))  # Random delay to appear human
                     email_field.send_keys(self.email)
                     logger.info("Entered email")
                 else:
@@ -88,7 +92,7 @@ class NYTScraperSelenium:
                         continue_button = self.driver.find_element(By.XPATH, selector)
                         continue_button.click()
                         logger.info("Clicked Continue button")
-                        time.sleep(3)
+                        time.sleep(random.uniform(2.5, 4.5))  # Random delay
                         break
                     except:
                         continue
@@ -165,7 +169,7 @@ class NYTScraperSelenium:
                 self.wm.take_screenshot("nyt_password_error.png")
                 return False
 
-            # Click submit/login button
+            # Click submit/login button - handle potential CAPTCHA
             try:
                 submit_selectors = [
                     "//button[@type='submit']",
@@ -183,9 +187,25 @@ class NYTScraperSelenium:
                         continue
 
                 if submit_button:
-                    submit_button.click()
-                    logger.info("Clicked submit button")
-                    time.sleep(5)  # Wait for login to complete
+                    # Try JavaScript click if regular click is intercepted
+                    try:
+                        submit_button.click()
+                        logger.info("Clicked submit button")
+                    except Exception as click_error:
+                        logger.warning(f"Regular click failed: {click_error}, trying JavaScript click")
+                        try:
+                            self.driver.execute_script("arguments[0].click();", submit_button)
+                            logger.info("Clicked submit button via JavaScript")
+                        except Exception as js_click_error:
+                            logger.error(f"JavaScript click also failed: {js_click_error}")
+                            # Check for CAPTCHA
+                            if "captcha" in str(click_error).lower() or "intercepted" in str(click_error).lower():
+                                logger.error("CAPTCHA or overlay detected - waiting longer")
+                                time.sleep(20)  # Extended wait for CAPTCHA
+                            else:
+                                return False
+
+                    time.sleep(10)  # Wait longer for login to complete
                 else:
                     logger.error("Could not find submit button")
                     return False

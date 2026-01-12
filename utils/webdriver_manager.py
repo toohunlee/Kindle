@@ -45,17 +45,22 @@ class WebDriverManager:
             chrome_options.add_argument('--disable-blink-features=AutomationControlled')
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--window-size=1920,1080')
-            chrome_options.add_argument('--disable-web-security')
-            chrome_options.add_argument('--allow-running-insecure-content')
+            chrome_options.add_argument('--start-maximized')
 
             # More anti-detection measures
             chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
             chrome_options.add_experimental_option('useAutomationExtension', False)
 
-            # User agent to appear as normal browser - updated to latest Chrome
+            # Add realistic browser preferences
+            chrome_options.add_experimental_option("prefs", {
+                "profile.default_content_setting_values.notifications": 2,
+                "profile.managed_default_content_settings.images": 1,
+            })
+
+            # User agent to appear as normal browser - updated to match current Chrome
             chrome_options.add_argument(
-                'user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+                'user-agent=Mozilla/5.0 (X11; Linux x86_64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.7499.169 Safari/537.36'
             )
 
             # Suppress logging
@@ -67,11 +72,21 @@ class WebDriverManager:
 
             # Remove automation indicators
             self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {
-                "userAgent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+                "userAgent": 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.7499.169 Safari/537.36'
             })
 
-            # Hide webdriver property
+            # Enhanced anti-detection scripts
             self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+            # Add additional navigator properties to appear more legitimate
+            self.driver.execute_script("""
+                Object.defineProperty(navigator, 'plugins', {
+                    get: () => [1, 2, 3, 4, 5]
+                });
+                Object.defineProperty(navigator, 'languages', {
+                    get: () => ['en-US', 'en']
+                });
+            """)
 
             # Set timeouts
             self.driver.implicitly_wait(10)
