@@ -321,11 +321,13 @@ class NYTScraperSelenium:
             logger.info(f"Fetching article content from {url}")
 
             self.driver.get(url)
-            time.sleep(3)
+            time.sleep(random.uniform(3, 5))  # Random delay for article page load
 
-            # Scroll to load full content
+            # Scroll to load full content - NYT loads content dynamically
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
+            time.sleep(1)
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
+            time.sleep(random.uniform(2, 3))  # Wait for dynamic content to load
 
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
 
@@ -333,18 +335,21 @@ class NYTScraperSelenium:
             headline = soup.find('h1')
             headline_text = headline.get_text(strip=True) if headline else "No title"
 
-            # Extract article body - try multiple selectors
+            # Extract article body - try multiple selectors and approaches
             article_body = None
             body_selectors = [
                 ('section', {'name': 'articleBody'}),
                 ('article', {}),
                 ('div', {'class': 'StoryBodyCompanionColumn'}),
                 ('div', {'class': 'article-body'}),
+                ('div', {'class': lambda x: x and 'article' in x.lower()}),
+                ('main', {}),
             ]
 
             for tag, attrs in body_selectors:
                 article_body = soup.find(tag, attrs)
                 if article_body:
+                    logger.debug(f"Found article body with {tag} {attrs}")
                     break
 
             paragraphs = []
@@ -354,6 +359,16 @@ class NYTScraperSelenium:
                     text = p.get_text(strip=True)
                     # Filter out short paragraphs that might be ads or UI elements
                     if text and len(text) > 20:
+                        paragraphs.append(text)
+
+            # Fallback: try to get all p tags from the page if no article body found
+            if not paragraphs:
+                logger.warning("No article body found with selectors, trying all p tags")
+                all_p_tags = soup.find_all('p')
+                for p in all_p_tags:
+                    text = p.get_text(strip=True)
+                    # More strict filtering for fallback
+                    if text and len(text) > 50 and not any(skip in text.lower() for skip in ['cookie', 'subscribe', 'advertisement', 'sign up']):
                         paragraphs.append(text)
 
             # Extract author
@@ -383,6 +398,11 @@ class NYTScraperSelenium:
 
             if not paragraphs:
                 logger.warning(f"No content found for article: {headline_text}")
+                # Take screenshot for debugging
+                self.wm.take_screenshot(f"nyt_article_no_content_{int(time.time())}.png")
+                # Log useful debug info
+                logger.debug(f"Page title: {self.driver.title}")
+                logger.debug(f"Number of p tags found: {len(soup.find_all('p'))}")
                 return None
 
             return {
