@@ -1,13 +1,30 @@
 # Kindle News Delivery
 
-매일 아침 Wall Street Journal과 New York Times의 뉴스를 킨들로 자동 배달하는 시스템입니다.
+매일 아침 New York Times Business 섹션 뉴스를 킨들로 자동 배달하는 시스템입니다.
 
 ## 기능
 
-- WSJ와 NYT에서 오늘의 주요 뉴스 자동 스크래핑
-- 킨들 친화적인 HTML 포맷으로 변환
+- NYT Business 섹션에서 오늘의 주요 뉴스 자동 스크래핑
+- 킨들 친화적인 EPUB 포맷으로 변환
 - 킨들 이메일로 자동 전송
-- 매일 정해진 시간에 자동 실행
+- 매일 정해진 시간에 자동 실행 (로컬 PC 또는 GitHub Actions)
+
+## 🚀 빠른 시작
+
+### 선택 1: Windows PC 자동 실행 (권장 - 회사 PC)
+**전체 기사 내용** + 안정적인 스크래핑
+
+👉 [Windows 설정 가이드](README-WINDOWS-SETUP.md) 참고
+
+### 선택 2: macOS 자동 실행
+**전체 기사 내용** + 안정적인 스크래핑
+
+👉 [macOS 설정 가이드](README-LOCAL-SETUP.md) 참고
+
+### 선택 3: GitHub Actions (클라우드)
+PC를 켜둘 필요 없음 (단, CAPTCHA 이슈 가능)
+
+👉 [GitHub Actions 가이드](README-GITHUB-SETUP.md) 참고
 
 ## 설치 방법
 
