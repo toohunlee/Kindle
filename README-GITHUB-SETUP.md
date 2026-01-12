@@ -50,13 +50,25 @@ GitHub repository 설정에서 다음 secrets를 추가해야 합니다:
 | `KINDLE_EMAIL` | `seolee@kindle.com` | Kindle 이메일 주소 |
 | `GMAIL_EMAIL` | `seolee@gmail.com` | Gmail 주소 |
 | `GMAIL_APP_PASSWORD` | `djwv chjz ygmp ydoo` | Gmail 앱 비밀번호 |
-| `NYT_EMAIL` | `email@example.com` | NYT 계정 이메일 |
-| `NYT_PASSWORD` | `qwerty0070!` | NYT 계정 비밀번호 |
+| `NYT_API_KEY` | `your-api-key` | **NYT API 키 (권장)** - [developer.nytimes.com](https://developer.nytimes.com/)에서 발급 |
+| `NYT_EMAIL` | `email@example.com` | NYT 계정 이메일 (API 없을 때 fallback) |
+| `NYT_PASSWORD` | `qwerty0070!` | NYT 계정 비밀번호 (API 없을 때 fallback) |
+
+**NYT API 키 발급 방법:**
+1. [NYT Developer Portal](https://developer.nytimes.com/)에 접속
+2. "Get Started"를 클릭하고 계정 생성 (무료)
+3. "My Apps" → "Create a New App" 클릭
+4. App 이름 입력 (예: "Kindle News Delivery")
+5. 다음 API들을 활성화:
+   - **Top Stories API** (필수)
+   - **Most Popular API** (선택)
+6. API 키를 복사하여 GitHub Secret으로 저장
 
 **중요**:
 - 각 secret을 개별적으로 추가해야 합니다
 - Secret 이름은 대소문자를 정확히 지켜야 합니다
 - 값에는 따옴표를 넣지 마세요 (그냥 값만 입력)
+- **NYT_API_KEY만 있으면 NYT_EMAIL과 NYT_PASSWORD는 선택사항입니다** (API 사용 권장)
 
 ### 3. Workflow 활성화
 

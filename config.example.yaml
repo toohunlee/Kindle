@@ -14,6 +14,10 @@ email:
 
 # NYT Credentials
 nyt:
+  # For API-based scraping (recommended - more reliable)
+  api_key: "your-nyt-api-key"  # Get from https://developer.nytimes.com/
+
+  # For Selenium-based scraping (backup method)
   email: "your-nyt-email@example.com"
   password: "your-nyt-password"
 

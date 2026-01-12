@@ -50,6 +50,7 @@ jobs:
 
         # NYT Credentials
         nyt:
+          api_key: "${{ secrets.NYT_API_KEY }}"
           email: "${{ secrets.NYT_EMAIL }}"
           password: "${{ secrets.NYT_PASSWORD }}"
 

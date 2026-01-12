@@ -11,6 +11,7 @@ from datetime import datetime
 import os
 
 from scrapers import NYTScraperSelenium
+from scrapers.nyt_scraper_api import NYTScraperAPI
 from formatters import EpubFormatter
 from utils import KindleSender
 
@@ -48,18 +49,32 @@ def scrape_news(config):
 
     nyt_articles = []
 
-    # Scrape NYT with Selenium
-    try:
-        logger.info("Starting NYT Business scraping with Selenium...")
-        nyt_scraper = NYTScraperSelenium(
-            config['nyt']['email'],
-            config['nyt']['password'],
-            headless=True
-        )
-        nyt_articles = nyt_scraper.scrape(max_articles=max_articles)
-        logger.info(f"Successfully scraped {len(nyt_articles)} NYT articles")
-    except Exception as e:
-        logger.error(f"Error scraping NYT: {e}")
+    # Try API-based scraping first (more reliable)
+    api_key = config.get('nyt', {}).get('api_key')
+    if api_key:
+        try:
+            logger.info("Starting NYT Business scraping with API...")
+            nyt_scraper = NYTScraperAPI(api_key)
+            nyt_articles = nyt_scraper.scrape(max_articles=max_articles)
+            logger.info(f"Successfully scraped {len(nyt_articles)} NYT articles via API")
+            return nyt_articles
+        except Exception as e:
+            logger.error(f"Error scraping NYT via API: {e}")
+            logger.info("Falling back to Selenium scraping...")
+
+    # Fallback to Selenium if API fails or not configured
+    if not nyt_articles:
+        try:
+            logger.info("Starting NYT Business scraping with Selenium...")
+            nyt_scraper = NYTScraperSelenium(
+                config['nyt']['email'],
+                config['nyt']['password'],
+                headless=True
+            )
+            nyt_articles = nyt_scraper.scrape(max_articles=max_articles)
+            logger.info(f"Successfully scraped {len(nyt_articles)} NYT articles via Selenium")
+        except Exception as e:
+            logger.error(f"Error scraping NYT with Selenium: {e}")
 
     return nyt_articles
 
