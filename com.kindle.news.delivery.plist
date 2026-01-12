@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Job Label -->
+    <key>Label</key>
+    <string>com.kindle.news.delivery</string>
+
+    <!-- Program to run -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/seo/kindle-news-delivery/run_daily.sh</string>
+    </array>
+
+    <!-- Working Directory -->
+    <key>WorkingDirectory</key>
+    <string>/Users/seo/kindle-news-delivery</string>
+
+    <!-- Run on weekdays (Monday-Friday) at 5:00 AM -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <!-- Monday -->
+        <dict>
+            <key>Weekday</key>
+            <integer>1</integer>
+            <key>Hour</key>
+            <integer>5</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <!-- Tuesday -->
+        <dict>
+            <key>Weekday</key>
+            <integer>2</integer>
+            <key>Hour</key>
+            <integer>5</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <!-- Wednesday -->
+        <dict>
+            <key>Weekday</key>
+            <integer>3</integer>
+            <key>Hour</key>
+            <integer>5</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <!-- Thursday -->
+        <dict>
+            <key>Weekday</key>
+            <integer>4</integer>
+            <key>Hour</key>
+            <integer>5</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <!-- Friday -->
+        <dict>
+            <key>Weekday</key>
+            <integer>5</integer>
+            <key>Hour</key>
+            <integer>5</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
+
+    <!-- Standard output and error logs -->
+    <key>StandardOutPath</key>
+    <string>/Users/seo/kindle-news-delivery/logs/daily_run.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/seo/kindle-news-delivery/logs/daily_error.log</string>
+
+    <!-- Run even when user is not logged in (requires sudo to load) -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- Keep job alive if it exits -->
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>

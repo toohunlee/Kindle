@@ -32,6 +32,7 @@ ENV/
 *.log
 scheduler.log
 kindle_news.log
+logs/
 
 # Output files
 output/
